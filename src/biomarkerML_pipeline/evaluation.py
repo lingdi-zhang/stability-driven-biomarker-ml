@@ -89,12 +89,13 @@ def analyze_feature_stability_importance_each_model(model_name,feature_importanc
     alpha=0.75,
     s=45)
 
-    axes[0].axhline(fold_cutoff* 100, linestyle="--", linewidth=1)
+    axes[0].axhline(fold_cutoff* 100, linestyle="--", linewidth=2)
 #    axes[0].axvline(importance_cutoff, linestyle="--", linewidth=1)
 
-    axes[0].set_xlabel("Mean |importance|")
-    axes[0].set_ylabel("Fold appearance (%)")
-    axes[0].set_title("Feature stability vs. importance",fontsize=13, fontweight="bold")
+    axes[0].set_xlabel("Mean |importance|",fontsize=14)
+    axes[0].set_ylabel("Fold appearance (%)",fontsize=14)
+    axes[0].tick_params(axis="both", labelsize=12)
+    axes[0].set_title(f"Feature stability vs. importance ({model_name})",fontsize=20, fontweight="bold")
 
     ####with the selected features
     selected = agg[
@@ -118,10 +119,11 @@ def analyze_feature_stability_importance_each_model(model_name,feature_importanc
     axes[1].set_ylim(-0.7, len(selected) - 0.2)
 
     axes[1].set_yticks([])
-    axes[1].set_xlabel("Fold appearance (%)")
+    axes[1].set_xlabel("Fold appearance (%)",fontsize=14)
+    axes[1].tick_params(axis="x", labelsize=12)
     axes[1].set_title(
-    "Selected robust features",
-    fontsize=16,
+    "Stability-Driven Biomarker Prioritization",
+    fontsize=18,
     fontweight="bold",
     pad=22)
 
@@ -140,7 +142,7 @@ def analyze_feature_stability_importance_each_model(model_name,feature_importanc
         row["gene"],
         ha="right",
         va="center",
-        fontsize=9,
+        fontsize=12,
         clip_on=False)
 
         axes[1].text(
@@ -149,7 +151,7 @@ def analyze_feature_stability_importance_each_model(model_name,feature_importanc
         f'{row["mean_importance"]:.3f} ± {row["sd_importance"]:.3f}',
         ha="left",
         va="center",
-        fontsize=9,
+        fontsize=12,
         clip_on=False)
 
     axes[1].text(
@@ -158,7 +160,7 @@ def analyze_feature_stability_importance_each_model(model_name,feature_importanc
     "Feature",
     ha="right",
     va="bottom",
-    fontsize=10,
+    fontsize=12,
     fontweight="bold",
     clip_on=False)
 
@@ -168,7 +170,7 @@ def analyze_feature_stability_importance_each_model(model_name,feature_importanc
     "Fold appearance (%)",
     ha="center",
     va="bottom",
-    fontsize=10,
+    fontsize=12,
     fontweight="bold")
 
     axes[1].text(
@@ -177,7 +179,7 @@ def analyze_feature_stability_importance_each_model(model_name,feature_importanc
     "Mean absolute\nimportance ± SD",
     ha="left",
     va="bottom",
-    fontsize=10,
+    fontsize=12,
     fontweight="bold",
     clip_on=False)
 

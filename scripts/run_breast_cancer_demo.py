@@ -1,8 +1,10 @@
-from biomarkerML_pipeline.load_demo_breat_cancer_data import load_demo_data
-from biomarkerML_pipeline import BiomarkerMLPipeline
+from biomarkerML_pipeline import (
+    BiomarkerMLPipeline,
+    load_demo_data
+)
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import train_test_split
 from pathlib import Path
 
 if __name__ == "__main__":
@@ -10,6 +12,7 @@ if __name__ == "__main__":
     output_dir = PROJECT_ROOT/"outputs"/"breast_cancer_demo"
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    X, y = load_demo_data()
     X_discovery, X_holdout, y_discovery, y_holdout = train_test_split(
     X,
     y,

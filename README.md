@@ -3,6 +3,7 @@
 A machine learning framework for stability-driven biomarker prioritization using cross-validation feature importance, feature stability, and multi-model consensus analysis.
 
 ## Overview
+![Consensus features across models](outputs/breast_cancer_demo/feature_selection_consensus_heatmap.png)
 
 Biomarker discovery studies often rely on a single machine learning model, which can introduce model-specific feature selection bias and unstable biomarker prioritization.
 
@@ -21,7 +22,7 @@ The framework integrates regularized linear and nonlinear machine learning model
 - Outer cross-validation for feature importance and stability assessment
 - Cross-model consensus analysis to reduce model-specific feature selection bias
 - SHAP and model-specific feature importance support for interpretable machine learning
-- Publication-ready visualization outputs for biomarker stability and model performance
+- Publication ready visualizations for biomarker stability, cross-model consensus analysis, and model performance
 - Modular and extensible Python implementation for translational multi-omics workflows
  
 ## Supported Models
@@ -62,6 +63,7 @@ stability-driven-biomarker-ml/
 ├── scripts/       # Example analysis workflows
 ├── configs/       # Customizable model hyperparameter configuration files
 ├── outputs/       # Generated figures and result tables
+├── LICENSE
 ├── README.md
 ├── requirements.txt
 └── pyproject.toml
@@ -71,7 +73,7 @@ stability-driven-biomarker-ml/
 ```bash
 git clone https://github.com/lingdi-zhang/stability-driven-biomarker-ml.git
 cd stability-driven-biomarker-ml
-pip install -r requirements.txt
+pip install -e .
 ```
 
 ## Requirements
@@ -89,7 +91,7 @@ pip install -r requirements.txt
 ### Read in customized or default model hyperparameters
 
 ```python
-from biomarkerML_pipeline.biomarkerML_pipeline import BiomarkerMLPipeline
+from  biomarkerML_pipeline import BiomarkerMLPipeline
 import pandas as pd
 outer_cv_params = pd.read_csv("configs/model_params.txt",sep="\t")
 feature_selection_model_params=pd.read_csv("configs/feature_selection_params.txt",sep="\t")
@@ -304,6 +306,10 @@ This approach helps:
 By combining feature importance, cross-validation stability, and cross-model consensus, the framework prioritizes biomarkers that are more likely to generalize across independent datasets and analytical approaches.
 
 Additional machine learning models can be incorporated into the framework through the modular architecture.
+
+## License
+
+This project is released under the MIT License. See the LICENSE file for details.
 
 ## Contact
 
