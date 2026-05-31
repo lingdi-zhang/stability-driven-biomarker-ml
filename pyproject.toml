@@ -1,0 +1,36 @@
+[project]
+name = "stability-driven-biomarker-ml"
+version = "0.1.0"
+description = "Machine learning framework for stability-driven biomarker discovery, feature stability assessment, and cross-model consensus analysis"
+requires-python = ">=3.10,<3.13"
+
+authors = [
+    {name = "Lingdi Zhang"}
+]
+
+dependencies = [
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "matplotlib",
+    "joblib",
+    "mord",
+    "pywgcna",
+    "scipy",
+    "shap",
+    "upsetplot",
+    "xgboost"
+]
+
+[project.urls]
+Homepage = "https://github.com/lingdi-zhang/stability-driven-biomarker-ml"
+Repository = "https://github.com/lingdi-zhang/stability-driven-biomarker-ml"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+

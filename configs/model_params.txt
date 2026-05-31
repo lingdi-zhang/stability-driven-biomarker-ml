@@ -1,0 +1,21 @@
+Model_name	Base_model	Parameters	Parameter_values	Scoring	tune_model	norm
+EN	"LogisticRegression(penalty=""elasticnet"",solver='saga', n_jobs=1,max_iter=5000)"	scaler	StandardScaler()	average_precision	TRUE	FALSE
+EN	"LogisticRegression(penalty=""elasticnet"",solver='saga', n_jobs=1,max_iter=5000)"	model__class_weight	"""balanced"""	average_precision	TRUE	FALSE
+EN	"LogisticRegression(penalty=""elasticnet"",solver='saga', n_jobs=1,max_iter=5000)"	model__C	0.01;0.1;1	average_precision	TRUE	FALSE
+EN	"LogisticRegression(penalty=""elasticnet"",solver='saga', n_jobs=1,max_iter=5000)"	model__l1_ratio	0.1;0.3;0.5;0.7;0.9;1	average_precision	TRUE	FALSE
+SVM	SVC(probability=True)	scaler	StandardScaler()	average_precision	TRUE	FALSE
+SVM	SVC(probability=True)	model__kernel	"""linear"""	average_precision	TRUE	FALSE
+SVM	SVC(probability=True)	model__C	0.01;0.1;1	average_precision	TRUE	FALSE
+SVM	SVC(probability=True)	model__class_weight	"""balanced"""	average_precision	TRUE	FALSE
+RF	"RandomForestClassifier(n_jobs=1, n_estimators=200)"	scaler	StandardScaler()	average_precision	TRUE	FALSE
+RF	"RandomForestClassifier(n_jobs=1,n_estimators=200)"	model__max_depth	3;5	average_precision	TRUE	FALSE
+RF	"RandomForestClassifier(n_jobs=1,n_estimators=200)"	model__min_samples_split	2;5;10	average_precision	TRUE	FALSE
+RF	"RandomForestClassifier(n_jobs=1,n_estimators=200)"	model__min_samples_leaf	1;2;5	average_precision	TRUE	FALSE
+RF	"RandomForestClassifier(n_jobs=1,n_estimators=200)"	model__max_features	"""sqrt"";""log2"";0.1"	average_precision	TRUE	FALSE
+RF	"RandomForestClassifier(n_jobs=1,n_estimators=200)"	model__class_weight	"""balanced"";""balanced_subsample"""	average_precision	TRUE	FALSE
+XGBoost	XGBClassifier(n_jobs=1)	scaler	StandardScaler()	average_precision	TRUE	FALSE
+XGBoost	XGBClassifier(n_jobs=1)	model__n_estimators	100;200	average_precision	TRUE	FALSE
+XGBoost	XGBClassifier(n_jobs=1)	model__max_depth	2;3;4	average_precision	TRUE	FALSE
+XGBoost	XGBClassifier(n_jobs=1)	model__learning_rate	0.03;0.05;0.1	average_precision	TRUE	FALSE
+XGBoost	XGBClassifier(n_jobs=1)	model__subsample	0.8;1.0	average_precision	TRUE	FALSE
+XGBoost	XGBClassifier(n_jobs=1)	model__colsample_bytree	0.8;1.0	average_precision	TRUE	FALSE

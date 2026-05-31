@@ -1,0 +1,5 @@
+Model_name	Base_model	Parameters	Parameter_values	Scoring	tune_model	norm
+feature_selection_params	"LogisticRegression(penalty=""elasticnet"",solver='saga', n_jobs=1,max_iter=5000)"	scaler	StandardScaler()	average_precision	TRUE	FALSE
+feature_selection_params	"LogisticRegression(penalty=""elasticnet"",solver='saga', n_jobs=1,max_iter=5000)"	model__class_weight	"""balanced"""	average_precision	TRUE	FALSE
+feature_selection_params	"LogisticRegression(penalty=""elasticnet"",solver='saga', n_jobs=1,max_iter=5000)"	model__C	0.01;0.1;1	average_precision	TRUE	FALSE
+feature_selection_params	"LogisticRegression(penalty=""elasticnet"",solver='saga', n_jobs=1,max_iter=5000)"	model__l1_ratio	0.1;0.3;0.5;0.7;0.9;1	average_precision	TRUE	FALSE

@@ -1,0 +1,7 @@
+model,genes
+EN,"mean concave points, worst radius, worst smoothness, radius error, worst perimeter, worst area, worst texture, worst concave points"
+RF,"mean concave points, worst area, worst concavity, worst concave points, worst perimeter, worst radius, mean concavity, area error"
+SVM,"worst texture, worst smoothness, mean texture, worst radius, worst area, mean concave points, radius error, worst concave points, worst perimeter"
+XGBoost,"area error, mean concave points, worst area, worst concave points, worst radius, worst texture, worst concavity, worst perimeter, worst smoothness"
+union,"worst area, area error, worst radius, worst concave points, worst texture, worst concavity, radius error, worst perimeter, mean concave points, mean texture, mean concavity, worst smoothness"
+intersection,"worst area, worst perimeter, mean concave points, worst radius, worst concave points"
