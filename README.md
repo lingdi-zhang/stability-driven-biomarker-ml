@@ -3,7 +3,6 @@
 A machine learning framework for stability-driven biomarker prioritization using cross-validation feature importance, feature stability, and multi-model consensus analysis.
 
 ## Overview
-![Consensus features across models](outputs/breast_cancer_demo/feature_selection_consensus_heatmap.png)
 
 Biomarker discovery studies often rely on a single machine learning model, which can introduce model-specific feature selection bias and unstable biomarker prioritization.
 
