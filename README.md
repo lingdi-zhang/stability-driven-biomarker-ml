@@ -3,7 +3,6 @@
 A machine learning framework for stability-driven biomarker prioritization using cross-validation feature importance, feature stability, and multi-model consensus analysis.
 
 ## Overview
-![Consensus features across models](outputs/breast_cancer_demo/feature_selection_consensus_heatmap.png)
 
 Biomarker discovery studies often rely on a single machine learning model, which can introduce model-specific feature selection bias and unstable biomarker prioritization.
 
@@ -27,8 +26,8 @@ The framework integrates regularized linear and nonlinear machine learning model
  
 ## Supported Models
 
-- Elastic Net
-- Random Forest
+- Elastic Net (EN)
+- Random Forest (RF)
 - XGBoost
 - Support Vector Machine (SVM)
 
@@ -123,9 +122,9 @@ run_pipeline=BiomarkerMLPipeline(
 )
 ```
 Parameters:
-- Prefilter_features=True enables optional Lasso-based feature preselection
-- Feature_selection_model_params specifies customizable Lasso hyperparameters
-- Select_top_n_features determines the number of retained features
+- Prefilter_features=True: enables optional Lasso-based feature preselection
+- Feature_selection_model_params: specifies customizable Lasso hyperparameters
+- Select_top_n_features determines: the number of retained features
 
 ### Stable Biomarker Selection
 ```python

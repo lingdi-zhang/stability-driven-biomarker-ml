@@ -76,8 +76,8 @@ def analyze_feature_stability_importance_each_model(model_name,feature_importanc
 
     fig, axes = plt.subplots(
     1, 2,
-    figsize=(13, 6),
-    gridspec_kw={"width_ratios": [1.0, 1.8]})
+    figsize=(15, 6),
+    gridspec_kw={"width_ratios": [1.0, 1.9]})
 
     #####stability vs importance all features
     fold_cutoff = cross_validation_selection
@@ -92,10 +92,10 @@ def analyze_feature_stability_importance_each_model(model_name,feature_importanc
     axes[0].axhline(fold_cutoff* 100, linestyle="--", linewidth=2)
 #    axes[0].axvline(importance_cutoff, linestyle="--", linewidth=1)
 
-    axes[0].set_xlabel("Mean |importance|",fontsize=14)
-    axes[0].set_ylabel("Fold appearance (%)",fontsize=14)
+    axes[0].set_xlabel("Mean |importance|",fontsize=14,fontweight="bold")
+    axes[0].set_ylabel("Fold appearance (%)",fontsize=14,fontweight="bold")
     axes[0].tick_params(axis="both", labelsize=12)
-    axes[0].set_title(f"Feature stability vs. importance ({model_name})",fontsize=20, fontweight="bold")
+    axes[0].set_title("All features",fontsize=16, fontweight="bold",pad=12)
 
     ####with the selected features
     selected = agg[
@@ -119,13 +119,13 @@ def analyze_feature_stability_importance_each_model(model_name,feature_importanc
     axes[1].set_ylim(-0.7, len(selected) - 0.2)
 
     axes[1].set_yticks([])
-    axes[1].set_xlabel("Fold appearance (%)",fontsize=14)
+    axes[1].set_xlabel("Fold appearance (%)",fontsize=14,fontweight="bold")
     axes[1].tick_params(axis="x", labelsize=12)
     axes[1].set_title(
-    "Stability-Driven Biomarker Prioritization",
-    fontsize=18,
+    "Stability prioritized biomarkers",
+    fontsize=16,
     fontweight="bold",
-    pad=22)
+    pad=12)
 
     for ax in axes:
         ax.spines["top"].set_visible(False)
@@ -164,14 +164,14 @@ def analyze_feature_stability_importance_each_model(model_name,feature_importanc
     fontweight="bold",
     clip_on=False)
 
-    axes[1].text(
-    50,
-    header_y,
-    "Fold appearance (%)",
-    ha="center",
-    va="bottom",
-    fontsize=12,
-    fontweight="bold")
+#    axes[1].text(
+#    50,
+#    header_y,
+#    "Fold appearance (%)",
+#    ha="center",
+#    va="bottom",
+#    fontsize=12,
+#    fontweight="bold")
 
     axes[1].text(
     importance_x,
@@ -189,6 +189,12 @@ def analyze_feature_stability_importance_each_model(model_name,feature_importanc
     alpha=0.25)
 
     axes[1].set_axisbelow(True)
+    
+    fig.suptitle(
+    f"Feature Stability and Biomarker Prioritization ({model_name})",
+    fontsize=22,
+    fontweight="bold",
+    y=1.03)
 
     plt.subplots_adjust(left=0.08, right=0.82, wspace=0.55)
     plt.savefig(output_dir / f"Feature_stability_and_importance_summary_{model_name}.png", dpi=300, bbox_inches="tight")
