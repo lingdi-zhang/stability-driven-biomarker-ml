@@ -31,10 +31,6 @@ The framework integrates regularized linear and nonlinear machine learning model
 - XGBoost
 - Support Vector Machine (SVM, linear kernel only)
 
-SVC must be declared as `SVC(kernel='linear', probability=True)` in `Base_model`. When tuning is enabled, `model__kernel` may contain only `"linear"`. Nonlinear kernels are rejected because coefficient-based feature importance requires a linear SVC. Before fitting, every tuning candidate is checked for linear SVC with probabilities enabled, including estimator replacements through `model`. Untuned models validate only their configured estimator and ignore the grid.
-
-With `tune_model=FALSE`, the pipeline uses the estimator settings declared in `Base_model` and defaults for unspecified parameters. The parameter grid is ignored without parsing, `Parameters` and `Parameter_values` may be blank, and the scaler is passthrough. Keep the table columns present and provide one row per untuned model.
-
 The pipeline is modular and extensible, allowing integration of additional machine learning models.
 
 ## Method Overview
@@ -45,7 +41,7 @@ Input data and customized model hyperparameters
 Nested cross-validation with multi-model training
 (scaling, when configured, fitted inside each training fold)
         ↓ 
-Feature importance ranking
+Feature importance calculation and ranking within each outer CV fold
         ↓ 
 Cross-fold feature importance and stability analysis 
         ↓ 
@@ -149,10 +145,6 @@ Choose one level of parallelization to avoid multiplying worker counts. The exam
 ### Input and configuration validation
 
 Feature matrices must be nonempty pandas DataFrames with unique string column names and finite numeric values. Discovery and holdout matrices must contain the same feature columns; column order may differ.
-
-Targets must contain exactly two classes. The pipeline stores `classes_` and `label_encoder_`, maps labels to 0/1, and uses the same mapping for holdout evaluation. The second sorted class (`classes_[1]`) is the positive class for PR-AUC and F1. Both classes must occur in the holdout data. Set your desired positive class to 1 and the other class to 0 if the default ordering is unsuitable.
-
-Each class needs at least five discovery samples for outer CV, seven when inner tuning is enabled. Thresholds must be between 0 and 1.
 
 Configuration tables require `Model_name`, `Base_model`, `Parameters`, `Parameter_values`, `Scoring`, and `tune_model`. Values accept Python literals, supported estimator/scaler constructors, and `logspace(...)` or `arange(...)` (also with the `np.` prefix). One-dimensional array results expand into individual tuning candidates: `logspace(-2, 0, 3)` is equivalent to `0.01;0.1;1`. Array expressions can also be combined with semicolon-separated values. When tuning is enabled, blank parameter fields, empty candidate grids, and multidimensional arrays are rejected; estimator/scaler objects remain individual candidates. Arbitrary Python expressions are rejected. Constructor, scoring, and tuning settings must agree across rows for each model.
 
