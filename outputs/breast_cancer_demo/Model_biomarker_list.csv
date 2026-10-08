@@ -1,7 +1,7 @@
-model,genes
-XGBoost,"area error, mean concave points, worst area, worst concave points, worst radius, worst perimeter, worst texture, mean texture"
-SVM,"worst radius, worst texture, worst concave points, worst area, mean concave points, worst perimeter, worst symmetry"
-EN,"radius error, worst texture, worst area, worst radius, worst concave points, area error, mean concave points, worst perimeter, worst symmetry"
-RF,"mean concave points, worst perimeter, worst concave points, worst area, worst radius, mean concavity, mean perimeter, mean area"
-union,"mean perimeter, mean area, worst concave points, mean concavity, area error, worst radius, mean texture, radius error, worst texture, worst perimeter, worst symmetry, worst area, mean concave points"
-intersection,"worst concave points, worst radius, worst perimeter, worst area, mean concave points"
+group_type,model,genes
+model,EN,"radius error, worst radius, worst texture, worst concave points, worst area, worst symmetry"
+model,SVM,"worst radius, worst concave points, worst texture, mean concave points, worst area, worst perimeter, worst symmetry"
+model,RF,"mean concave points, mean concavity, worst area, worst concave points, worst perimeter, worst radius, mean radius, worst concavity"
+model,XGBoost,"area error, worst area, worst concave points, worst perimeter, mean concave points, worst radius, worst texture, mean texture"
+aggregate,union,"area error, mean concave points, mean concavity, mean radius, mean texture, radius error, worst area, worst concave points, worst concavity, worst perimeter, worst radius, worst symmetry, worst texture"
+aggregate,intersection,"worst area, worst concave points, worst radius"

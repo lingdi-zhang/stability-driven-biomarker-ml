@@ -31,10 +31,14 @@ def summarize_outer_cv_results(model_name,output,feature_importance_selection,cr
         feature_ranking=pd.DataFrame({'fold':fold,'gene':res['gene_list'],'coef':coef})
         feature_ranking['abs_coef']=feature_ranking['coef'].abs()
         threshold = feature_ranking["abs_coef"].quantile(feature_importance_selection)
-        feature_ranking=feature_ranking[feature_ranking["abs_coef"] >= threshold]
+        feature_ranking['selected'] = (
+            (feature_ranking["abs_coef"] >= threshold)
+            & (feature_ranking["abs_coef"] > 0)
+        )
         feature_importance.append(feature_ranking)
 
     feature_importance=pd.concat(feature_importance, ignore_index=True)
+    feature_importance.to_csv(output_dir / f"Feature_importance_by_fold_{model_name}.csv", index=False)
     nfold=len(output)
     # ========================================
     # 2. Plot feature stability and importance
@@ -55,6 +59,3 @@ def summarize_outer_cv_results(model_name,output,feature_importance_selection,cr
     # =========================
     top_genes=selected['gene'].tolist()
     return top_genes,mean_auc,sd_auc,mean_pr,sd_pr,mean_f1,sd_f1
-
-
-

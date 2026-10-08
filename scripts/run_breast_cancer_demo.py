@@ -25,7 +25,6 @@ if __name__ == "__main__":
         sep="\t"
     )
 
-#    feature_selection_params = pd.read_csv("configs/feature_selection_params.txt",sep="\t")
 
     run_pipeline=BiomarkerMLPipeline(outer_cv_params,output_dir=output_dir,n_jobs_models=3) 
     run_pipeline.stable_biomarker_selection(X_discovery,y_discovery,feature_importance_selection=0.75,cross_folds_selection=0.6)

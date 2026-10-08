@@ -26,23 +26,24 @@ The framework integrates regularized linear and nonlinear machine learning model
  
 ## Supported Models
 
-- Elastic Net (EN)
+- Logistic regression with Elastic Net regularization (EN)
 - Random Forest (RF)
 - XGBoost
-- Support Vector Machine (SVM)
+- Support Vector Machine (SVM, linear kernel only)
 
-The pipeline is modular and extensible, allowing integration of additional machine learning models and feature selection strategies.
+SVC must be declared as `SVC(kernel='linear', probability=True)` in `Base_model`. When tuning is enabled, `model__kernel` may contain only `"linear"`. Nonlinear kernels are rejected because coefficient-based feature importance requires a linear SVC. Before fitting, every tuning candidate is checked for linear SVC with probabilities enabled, including estimator replacements through `model`. Untuned models validate only their configured estimator and ignore the grid.
+
+With `tune_model=FALSE`, the pipeline uses the estimator settings declared in `Base_model` and defaults for unspecified parameters. The parameter grid is ignored without parsing, `Parameters` and `Parameter_values` may be blank, and the scaler is passthrough. Keep the table columns present and provide one row per untuned model.
+
+The pipeline is modular and extensible, allowing integration of additional machine learning models.
 
 ## Method Overview
 
 ```text
 Input data and customized model hyperparameters
         ↓ 
-Preprocessing and scaling 
-        ↓
-(Optional feature selection with Lasso)
-        ↓ 
 Nested cross-validation with multi-model training
+(scaling, when configured, fitted inside each training fold)
         ↓ 
 Feature importance ranking
         ↓ 
@@ -76,7 +77,10 @@ pip install -e .
 ```
 
 ## Requirements
-- Python 3.10+
+
+Dependency ranges are bounded for compatibility with XGBoost 2.0.3 and SHAP 0.48.0, including scikit-learn <1.6 and Numba <0.62.
+
+- Python 3.10–3.12
 - pandas
 - numpy
 - scikit-learn
@@ -86,45 +90,71 @@ pip install -e .
 - seaborn
 - upsetplot
 
-## Example Python Usage:
-### Read in customized or default model hyperparameters
+## Example Python Usage
+
+After installation, run this complete example from the repository root:
 
 ```python
-from  biomarkerML_pipeline import BiomarkerMLPipeline
+from pathlib import Path
+
 import pandas as pd
-outer_cv_params = pd.read_csv("configs/model_params.txt",sep="\t")
-feature_selection_model_params=pd.read_csv("configs/feature_selection_params.txt",sep="\t")
-```
-### Initiate the Pipeline
-```python
-run_pipeline=BiomarkerMLPipeline(
-	outer_cv_params,
-	output_dir=output_dir
+from sklearn.model_selection import train_test_split
+
+from biomarkerML_pipeline import BiomarkerMLPipeline, load_demo_data
+
+project_root = Path.cwd()
+output_dir = project_root / "outputs" / "breast_cancer_demo"
+outer_cv_params = pd.read_csv(project_root / "configs" / "model_params.txt", sep="\t")
+
+X, y = load_demo_data()
+X_discovery, X_holdout, y_discovery, y_holdout = train_test_split(
+    X, y, test_size=0.20, stratify=y, random_state=42
 )
+
+run_pipeline = BiomarkerMLPipeline(
+    outer_cv_params,
+    output_dir=output_dir,
+    n_jobs_gridsearch=4,
+    n_jobs_outer_cv=1,
+    n_jobs_models=1,
+)
+
+print("Selecting stable biomarkers...")
+run_pipeline.stable_biomarker_selection(
+    X_discovery, y_discovery,
+    feature_importance_selection=0.75,
+    cross_folds_selection=0.60,
+)
+
+print("Evaluating aggregate biomarkers on the holdout set...")
+holdout_metrics = run_pipeline.prediction_with_stable_biomarkers_across_models(
+    X_discovery, y_discovery, X_holdout, y_holdout,
+    appearance_threshold=0.50,
+)
+print(holdout_metrics)
 ```
+
+This example parallelizes grid search across four workers. Use `n_jobs_gridsearch=1` for a serial run. Scaling is fitted inside the cross-validation pipeline when configured; `tune_model=FALSE` uses passthrough scaling.
+
+`output_dir` accepts a string or `Path` and defaults to `outputs` in the current working directory. Missing directories are created automatically.
+
 Parallelization settings can be customized through:
 
 - n_jobs_gridsearch
 - n_jobs_outer_cv
 - n_jobs_models
 
-For most applications, it is recommended to parallelize model training (n_jobs_models) while keeping the remaining settings at their default values.
+Choose one level of parallelization to avoid multiplying worker counts. The example parallelizes grid search; alternatively, use `n_jobs_models` to parallelize models and keep the other settings at 1.
 
-### Optional Lasso Feature Selection
+### Input and configuration validation
 
-```python
-run_pipeline=BiomarkerMLPipeline(
-	outer_cv_params,
-	feature_selection_model_params=feature_selection_model_params,
-	prefilter_features=True,
-	select_top_n_features=30,
-	output_dir=output_dir
-)
-```
-Parameters:
-- Prefilter_features=True: enables optional Lasso-based feature preselection
-- Feature_selection_model_params: specifies customizable Lasso hyperparameters
-- Select_top_n_features determines: the number of retained features
+Feature matrices must be nonempty pandas DataFrames with unique string column names and finite numeric values. Discovery and holdout matrices must contain the same feature columns; column order may differ.
+
+Targets must contain exactly two classes. The pipeline stores `classes_` and `label_encoder_`, maps labels to 0/1, and uses the same mapping for holdout evaluation. The second sorted class (`classes_[1]`) is the positive class for PR-AUC and F1. Both classes must occur in the holdout data. Set your desired positive class to 1 and the other class to 0 if the default ordering is unsuitable.
+
+Each class needs at least five discovery samples for outer CV, seven when inner tuning is enabled. Thresholds must be between 0 and 1.
+
+Configuration tables require `Model_name`, `Base_model`, `Parameters`, `Parameter_values`, `Scoring`, and `tune_model`. Values accept Python literals, supported estimator/scaler constructors, and `logspace(...)` or `arange(...)` (also with the `np.` prefix). One-dimensional array results expand into individual tuning candidates: `logspace(-2, 0, 3)` is equivalent to `0.01;0.1;1`. Array expressions can also be combined with semicolon-separated values. When tuning is enabled, blank parameter fields, empty candidate grids, and multidimensional arrays are rejected; estimator/scaler objects remain individual candidates. Arbitrary Python expressions are rejected. Constructor, scoring, and tuning settings must agree across rows for each model.
 
 ### Stable Biomarker Selection
 ```python
@@ -142,14 +172,14 @@ Within each outer cross-validation fold:
 - Linear models rank features using absolute coefficient magnitude
 - Tree-based models rank features using absolute SHAP values
 
-Features with importance values above the specified quantile threshold are retained.
+Features with importance at or above the specified quantile threshold and greater than zero are selected within that fold.
 
 Default:
 
 ```python
 feature_importance_selection = 0.75
 ```
-corresponding to the top 25% most important features within each fold.
+corresponding to approximately the top 25% most important features within each fold. Ties at the quantile can retain more features; zero-importance features are excluded.
 
 #### Cross-Fold Stability Selection
 
@@ -162,6 +192,12 @@ cross_folds_selection = 0.60
 ```
 
 meaning that features must be selected in at least 60% of outer cross-validation folds to be considered robust biomarkers.
+
+Importance mean and sample SD use all measured fold scores, including scores below the selection threshold and measured zeros. All input features are evaluated in every outer fold. Stability counts selected folds divided by all outer folds. A feature never selected is not retained, even when the stability threshold is zero.
+
+Each run saves `Feature_importance_by_fold_<model>.csv` with scores and selection flags, and `Feature_stability_and_importance_summary_<model>.csv` with mean, SD, measured-fold counts, and stability. Figures show the measurement count (`n`); SD is reported as N/A when only one score was measured. The example figures and CSVs below were regenerated using the current implementation and the full configured parameter grids.
+
+Create a fresh pipeline object for each analysis. Calling `stable_biomarker_selection` again on an existing object invalidates its previous selection results. If the new attempt fails, complete a successful selection run before evaluating holdout data.
 
 ### Independent Hold-Out Evaluation
 ```python
@@ -187,6 +223,12 @@ Prediction performance is evaluated using:
 - Biomarkers identified by all models
 - Biomarkers meeting a user-defined model consensus threshold
 
+Selected features are stored separately in `run_pipeline.model_biomarkers` (one list per selection model) and `run_pipeline.aggregate_biomarkers` (union, intersection, and `consensus_features_for_appearance_threshold`). The consensus group defaults to 50% after selection and is updated using `appearance_threshold` during holdout evaluation. `gene_list` is a compatibility alias containing only model-specific lists. Aggregate group names can also be used as model names without collisions. Newly generated `Model_biomarker_list.csv` files include `group_type` (`model` or `aggregate`) to distinguish these rows.
+
+Holdout evaluation continues to evaluate the three aggregate biomarker groups with every prediction model.
+
+Empty biomarker groups are skipped during holdout evaluation and recorded with `status="no_features"`, `n_features=0`, and missing metrics. Evaluated groups have `status="ok"` and their feature count. If no biomarkers are selected by any model, the biomarker list is still saved and the consensus heatmap is skipped and any previous consensus heatmap in that output directory is removed.
+
 ## Breast Cancer Demonstration
 
 The framework includes a demonstration using the Wisconsin Breast Cancer dataset to illustrate:
@@ -202,6 +244,8 @@ Run the breast cancer demonstration:
 ```bash
 python scripts/run_breast_cancer_demo.py
 ```
+The demo fixes the data split, cross-validation splits, and estimator random seeds at 42. Exact numerical reproduction also requires matching dependency versions.
+
 For larger datasets, running analyses on an HPC environment is recommended.
 
 ## Example Outputs
@@ -215,10 +259,10 @@ Features are prioritized using both:
 
 Default criteria:
 
-- Top 25% feature importance within each fold
+- Positive feature importance at or above the 75th percentile within each fold
 - Selected in at least 60% of outer cross-validation folds
 
-Features were prioritized based on both their importance within individual cross-validation folds and their consistency across folds. Within each fold, features with importance values above the 75th percentile were considered selected. Feature stability was quantified as the percentage of cross-validation folds in which a feature was selected.
+Features were prioritized based on both their importance within individual cross-validation folds and their consistency across folds. Within each fold, features with positive importance at or above the 75th percentile were considered selected. Ties can retain more than 25% of features. Feature stability was quantified as the percentage of cross-validation folds in which a feature was selected.
 
 This approach prioritizes biomarkers that are both highly informative and reproducible, while reducing sensitivity to individual train-test splits.
 
@@ -238,7 +282,7 @@ Consensus biomarkers selected across models are compared to identify robust feat
 
 ![Consensus features across models](outputs/breast_cancer_demo/feature_selection_consensus_heatmap.png)
 
-Cross-model consensus analysis identified five biomarkers (worst area, worst radius, worst concave points, worst perimeter, and mean concave points) that were selected by all four machine learning models. These features are established morphometric characteristics associated with malignant breast tumors, providing a biologically plausible benchmark for evaluating biomarker stability and cross-model consensus. Additional biomarkers demonstrated substantial agreement across multiple model families.
+Cross-model consensus analysis identified three biomarkers (worst area, worst concave points, and worst radius) selected by all four machine learning models. The union contains 13 biomarkers, and 7 meet the ≥50% model-consensus threshold. These results provide a benchmark for comparing cross-model feature stability on the demonstration dataset.
 
 Feature lists are available in:
 
@@ -264,11 +308,11 @@ Prediction performance is evaluated using:
 
 | Biomarker Set | Consensus Across Models | Number of Features | ROC-AUC (Mean ± SD) | PR-AUC (Mean ± SD) | F1 (Mean ± SD) |
 |--------------|-------------------------|-------------------|---------------------|--------------------|----------------|
-| Union of Biomarkers | Any model | 12 | 0.996 ± 0.002 | 0.998 ± 0.001 | 0.976 ± 0.004 |
-| Consensus Biomarkers | ≥50% of models | 10 | 0.996 ± 0.002 | 0.998 ± 0.002 | 0.977 ± 0.009 |
-| Consensus Biomarkers | 100% of models | 5 | 0.991 ± 0.002 | 0.995 ± 0.001 | 0.939 ± 0.000 |
+| Union of Biomarkers | Any model | 13 | 0.993 ± 0.001 | 0.996 ± 0.001 | 0.966 ± 0.007 |
+| Consensus Biomarkers | ≥50% of models | 7 | 0.993 ± 0.001 | 0.996 ± 0.001 | 0.960 ± 0.006 |
+| Consensus Biomarkers | 100% of models | 3 | 0.989 ± 0.002 | 0.993 ± 0.001 | 0.954 ± 0.011 |
 
-Biomarkers selected by ≥50% of machine learning models maintained performance comparable to the union feature set, whereas restricting selection to biomarkers identified by all models reduced the feature set further at the cost of modest performance loss.
+The table reports mean ± population SD across four classifiers evaluated on the same holdout split; the SD describes variation across models. The ≥50% consensus set reduces the union from 13 to 7 features. The three-feature intersection has lower mean F1 in this run.
 
 Results are available in:
 
@@ -320,3 +364,9 @@ GitHub: https://github.com/lingdi-zhang
 
 LinkedIn: https://www.linkedin.com/in/lingdi-zhang-88156792
 
+## Regression tests
+
+```bash
+pip install -e ".[test]"
+python -m pytest -q
+```

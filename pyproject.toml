@@ -13,13 +13,18 @@ dependencies = [
     "matplotlib>=3.7",
     "mord>=0.7",
     "numpy>=1.24,<2.0",
+    "numba>=0.59,<0.62",
     "pandas>=2.0,<3.0",
-    "scikit-learn>=1.3",
+    "scikit-learn>=1.3,<1.6",
     "scipy>=1.10",
+    "seaborn>=0.12",
     "shap==0.48.0",
     "upsetplot>=0.9.0",
     "xgboost==2.0.3"
 ]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
 
 [project.urls]
 Homepage = "https://github.com/lingdi-zhang/stability-driven-biomarker-ml"
@@ -31,5 +36,4 @@ where = ["src"]
 [build-system]
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
-
 
